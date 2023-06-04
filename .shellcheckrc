@@ -1,0 +1,11 @@
+shell=bash
+source-path=SCRIPTDIR
+
+external-sources=true
+
+enable=quote-safe-variables
+enable=check-unassigned-uppercase
+enable=deprecate-which
+enable=avoid-nullary-conditions
+
+# disable=SCXXXX

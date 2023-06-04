@@ -1,0 +1,42 @@
+---
+
+repos:
+  - repo: meta
+    hooks:
+      - id: check-useless-excludes
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-yaml
+      - id: check-toml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.1
+    hooks:
+      - id: remove-tabs
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.4
+    hooks:
+      - id: codespell
+        args: [-I, .codespell.allow]
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.5
+    hooks:
+      - id: shellcheck
+        args: [--severity=info]
+
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.32.0
+    hooks:
+      - id: yamllint
