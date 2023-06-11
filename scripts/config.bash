@@ -97,17 +97,29 @@ LOG_DEBUG() { _log_print_message DEBUG "$1" >&2; }
 
 # locate_cmd <var_name> <name1> ... <nameN>
 locate_cmd() {
-    declare -g "$1"
-    declare -n VAR="$1"
+    local var_name="$1"
+    shift
+
+    if [ -n "${!var_name}" ]; then
+        LOG_DEBUG "${var_name}=${!var_name} already defined, exiting..."
+        return 0
+    fi
 
     for name in "$@"; do
         if command -v "$name" > /dev/null 2>&1; then
-            VAR="$(command -v "$name")"
-            LOG_DEBUG "Command '$name' found at '$VAR'"
-            return 0
+            cmd_name="$(command -v "$name")"
+            LOG_DEBUG "Command '$name' found at '$cmd_name'"
+            break
         fi
     done
-    LOG_FATAL "None of '$*' commands found"
+
+    if [ -n "$cmd_name" ]; then
+        declare -gr "$var_name=$cmd_name"
+        return 0
+    else
+        LOG_FATAL "None of '$*' commands found"
+        return 1
+    fi
 }
 
 # ==============================================================================
