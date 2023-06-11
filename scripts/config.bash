@@ -96,8 +96,11 @@ locate_cmd() {
 verify_system() {
     locate_cmd AWK gawk awk
     locate_cmd GREP ggrep grep
+    declare -g PARAM_YAML_CONFIG
 
     [ "${BASH_VERSINFO[0]}" -ge 4 ] || echo "Associative arrays require Bash>=4.x (you have: $BASH_VERSION)"
+    [ -n "${PARAM_YAML_CONFIG}" ] || LOG_FATAL "Variable 'PARAM_YAML_CONFIG' not defined!"
+    [ -r "${PARAM_YAML_CONFIG}" ] || LOG_FATAL "YAML config file '$PARAM_YAML_CONFIG' not readable"
 }
 
 # ==============================================================================
