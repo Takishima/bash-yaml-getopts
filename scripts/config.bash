@@ -93,6 +93,15 @@ locate_cmd() {
 
 # ==============================================================================
 
+verify_system() {
+    locate_cmd AWK gawk awk
+    locate_cmd GREP ggrep grep
+
+    [ "${BASH_VERSINFO[0]}" -ge 4 ] || echo "Associative arrays require Bash>=4.x (you have: $BASH_VERSION)"
+}
+
+# ==============================================================================
+
 variable_to_string() {
     declare -gr GREP
     [ -n "$GREP" ] || LOG_FATAL_INTERNAL "'GREP' variable not defined!"
