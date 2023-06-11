@@ -69,6 +69,7 @@ _log_print_message() {
 }
 
 LOG_FATAL() { _log_print_message FATAL "$1" >&2; exit 1; }
+LOG_FATAL_INTERNAL() { LOG_FATAL "[internal] $1"; }
 LOG_WARN()  { _log_print_message WARN "$1" >&2; }
 LOG_INFO()  { _log_print_message INFO "$1" >&2; }
 LOG_DEBUG() { _log_print_message DEBUG "$1" >&2; }
@@ -89,3 +90,15 @@ locate_cmd() {
     done
     LOG_FATAL "None of '$*' commands found"
 }
+
+# ==============================================================================
+
+variable_to_string() {
+    declare -gr GREP
+    [ -n "$GREP" ] || LOG_FATAL_INTERNAL "'GREP' variable not defined!"
+
+    set -o posix
+    set | "$GREP" "^${1}="
+}
+
+# ==============================================================================
