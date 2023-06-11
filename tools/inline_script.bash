@@ -105,6 +105,9 @@ inline_sources() { # shellcheck disable=SC2094
     declare -r _regex='^([[:space:]]*)(source|\.)[[:space:]]+(.+)'
     declare -r _regex_inline_skip='^[[:space:]]*#[[:space:]]*inline[[:space:]]+skip.*'
     declare -r _regex_shellcheck='^[[:space:]]*#[[:space:]]*shellcheck[[:space:]]+source=(.+)'
+    declare -r _include_guard_regex='^\[ "\$\{_sourced_[a-z_]+\}" != "" \].*'
+    # shellcheck disable=SC2016
+    declare -r _source_protection_macro='[ "${BASH_SOURCE[0]}" -ef "$0" ]'
     local _inline_skip=false _expanded_vars='' _source_file_shellcheck='' _file_dir=''
 
     _file_dir="$(dirname "$_file")"
@@ -126,6 +129,12 @@ inline_sources() { # shellcheck disable=SC2094
 
             # Print line
             printf '%s\n' "$_line"
+        elif [[ "${_line:0:32}" == "$_source_protection_macro" ]]; then
+            # [ "${BASH_SOURCE[0]}" -ef "$0" ] && ...
+            LOG_DEBUG "Skip source protection macro"
+        elif [[ "$_line" =~ $_include_guard_regex ]]; then
+            # [ "${_sourced_XXX}" != "" ] && ...
+            LOG_DEBUG "Skip Bash include guard"
         elif printf "%s\n" "$_line" | "$GREP" -q -E "$_regex_shellcheck"; then
             # # shellcheck source=...
             LOG_DEBUG "ShellCheck source '$_line'"
@@ -224,7 +233,7 @@ inline_sources() { # shellcheck disable=SC2094
                 var_value=$(echo "$_expanded_var" | cut -d= -f2)
                 var_value=$(realpath --relative-to="$_file_dir" "$var_value")
                 # shellcheck disable=SC2094
-                printf '# %s="%s" (relative to %s)' "$var_name" "$var_value" "$(basename "$_file")"
+                printf '# %s="%s" (relative to %s)\n' "$var_name" "$var_value" "$(basename "$_file")"
             fi
 
 
