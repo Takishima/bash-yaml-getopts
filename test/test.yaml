@@ -1,0 +1,18 @@
+---
+
+parameters: # asdjnasd
+  build:
+    short_option: "B"
+    help: "Build directory"
+    type: path # asdjnasd
+    default: 'build'
+  compile-db:
+    help: "Generate compile database"  # helpful
+    type: bool
+  start:
+    short_option: 's'
+    help: "Start value for counter"
+    type: int   # an int
+  name:
+    help: "Name"  # a comment
+    type: string
