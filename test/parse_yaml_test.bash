@@ -43,7 +43,6 @@ set +o errexit
 
 test_read_yaml_parameter_file() {
     locate_cmd GREP ggrep grep
-    locate_cmd AWK gawk awk
     _read_yaml_parameter_file "$TEST_DIR/test.yaml"
     ${_ASSERT_EQUALS_} "'exit code'" 0 "'$?'"
 
@@ -51,44 +50,54 @@ test_read_yaml_parameter_file() {
     assertEquals 'Test parameter_names' 'parameter_names=([0]="build" [1]="compile_db" [2]="start" [3]="name")' "$var"
 
     assertNotNull "parameters_build[...]" "${parameters_build[*]}"
-    assertEquals 'build[help]' '"Build directory"' "${parameters_build[help]}"
+    assertEquals 'build[help]' 'Build directory' "${parameters_build[help]}"
     assertEquals 'build[type]' 'path' "${parameters_build[type]}"
-    assertEquals 'build[short_option]' '"B"' "${parameters_build[short_option]}"
-    assertEquals 'build[default]' '"build"' "${parameters_build[default]}"
+    assertEquals 'build[short_option]' 'B' "${parameters_build[short_option]}"
+    assertEquals 'build[default]' 'build' "${parameters_build[default]}"
 
     assertNotNull "parameters_start[...]" "${parameters_start[*]}"
-    assertEquals 'start[help]' '"Start value for counter"' "${parameters_start[help]}"
+    assertEquals 'start[help]' 'Start value for counter' "${parameters_start[help]}"
     assertEquals 'start[type]' 'int' "${parameters_start[type]}"
-    assertEquals 'start[short_option]' '"s"' "${parameters_start[short_option]}"
+    assertEquals 'start[short_option]' 's' "${parameters_start[short_option]}"
     assertNull 'start[default] is null' "${parameters_start[default]}"
 
     assertNotNull "parameters_compile_db[...]" "${parameters_compile_db[*]}"
-    assertEquals 'compile_db[help]' '"Generate compile database"' "${parameters_compile_db[help]}"
+    assertEquals 'compile_db[help]' 'Generate compile database' "${parameters_compile_db[help]}"
     assertEquals 'compile_db[type]' 'bool' "${parameters_compile_db[type]}"
     assertNull 'compile_db[short_option] is null' "${parameters_compile_db[short_option]}"
     assertNull 'compile_db[default] is null' "${parameters_compile_db[default]}"
 
     assertNotNull "parameters_name[...]" "${parameters_name[*]}"
-    assertEquals 'name[help]' '"Name"' "${parameters_name[help]}"
+    assertEquals 'name[help]' 'Name' "${parameters_name[help]}"
     assertEquals 'name[type]' 'string' "${parameters_name[type]}"
     assertNull 'name[short_option] is null' "${parameters_name[short_option]}"
     assertNull 'name[default] is null' "${parameters_name[default]}"
 }
 
 
-# test_read_yaml_parameter_file_multiline() {
-#     locate_cmd GREP ggrep grep
-#     locate_cmd AWK gawk awk
-#
-#     _read_yaml_parameter_file "$TEST_DIR/multiline_string.yaml"
-#     ${_ASSERT_EQUALS_} "'exit code'" 0 "'$?'"
-# }
+test_read_yaml_parameter_file_multiline() {
+    locate_cmd GREP ggrep grep
+
+    _read_yaml_parameter_file "$TEST_DIR/multiline_string.yaml"
+    ${_ASSERT_EQUALS_} "'exit code'" 0 "'$?'"
+
+    assertNotNull "parameters_build[...]" "${parameters_build[*]}"
+    assertEquals 'build[help]' 'Directory\nDefault value: build' "${parameters_build[help]}"
+    assertEquals 'build[type]' 'path' "${parameters_build[type]}"
+    assertEquals 'build[short_option]' 'B' "${parameters_build[short_option]}"
+    assertEquals 'build[default]' 'build' "${parameters_build[default]}"
+
+    assertNotNull "parameters_compile_db[...]" "${parameters_compile_db[*]}"
+    assertEquals 'compile_db[help]' 'Generate compile database' "${parameters_compile_db[help]}"
+    assertEquals 'compile_db[type]' 'bool' "${parameters_compile_db[type]}"
+    assertNull 'compile_db[short_option] is null' "${parameters_compile_db[short_option]}"
+    assertNull 'compile_db[default] is null' "${parameters_compile_db[default]}"
+}
 
 # ==============================================================================
 
 test_parse_yaml_parameter_file() {
     locate_cmd GREP ggrep grep
-    locate_cmd AWK gawk awk
 
      parse_yaml_parameter_file "$TEST_DIR/test.yaml"
     ${_ASSERT_EQUALS_} "'exit code'" 0 "'$?'"
@@ -111,7 +120,6 @@ test_parse_yaml_parameter_file() {
 
 test_parse_yaml_parameter_file_invalid() {
     locate_cmd GREP ggrep grep
-    locate_cmd AWK gawk awk
 
     stderr=$(parse_yaml_parameter_file "$TEST_DIR/invalid_type.yaml" 2>&1)
     ${_ASSERT_NOT_EQUALS_} "'exit code'" 0 "$?"

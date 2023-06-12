@@ -3,8 +3,14 @@
 parameters: # asdjnasd
   build:
     short_option: "B"
-    help: >
+    help: |
       Directory
       Default value: build
     type: path # asdjnasd
     default: 'build'
+  compile-db:
+    help: >
+      Generate
+      compile
+      database  # helpful
+    type: bool

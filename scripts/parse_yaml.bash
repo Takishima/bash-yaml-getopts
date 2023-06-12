@@ -42,90 +42,82 @@ BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # For each parameter, this function will add the name to an array named `parameter_names` and the parameter attributes
 # will be stored in an associative array named `parameters_<param_name>` (e.g. `parameters_build`)
 function _read_yaml_parameter_file() {
-    [ -n "$AWK" ] || LOG_FATAL_INTERNAL "'AWK' variable not defined!"
-
     declare -r filename="$1"
-    declare -a awk_args=(-F: -vidx=0)
-    local eval_str
+    local section='' multiline_mode=0
 
     # NB: cleanup any variables that may come from another run of this function
     unset "${!parameters@}"
 
-    # shellcheck disable=SC2016
-    eval_str=$($AWK "${awk_args[@]}" '{
-          gsub(/^[ \t]+|[ \t]+$/, "", $1);
-          gsub(/^[ \t]+|[ \t]+$/, "", $2);
-          gsub(/[ \t]*#.*$/, "", $1);
-          gsub(/[ \t]*#.*$/, "", $2);
+    declare -ga parameter_names=()
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^([[:blank:]]*|^[[:blank:]]*---[[:blank:]]*)$  ]]; then
+            continue
+        fi
 
-          if ($1 !~ /^[ \t]*$/ && $1 !~ /^---[ \t]*$/) {
-              if (section == "") {
-                  # Top level
-                  if ($1 != "parameters") {
-                      print "Top level item must be '\''parameters'\''" > "/dev/stderr";
-                      exit 1;
-                  }
-                  else {
-                      section=$1;
-                  }
-              }
-              else {
-                  # Either variable name or variable settings
-                  # NB: we rely on the fact that a variable name has an empty second field
-                  if ($2 == "") {
-                      param_arg_name=$1;
-                      param_var_name=$1;
-                      gsub(/-/, "_", param_var_name);
-                      parameters[param_var_name,"var_name"]=param_var_name;
-                      parameters[param_var_name,"long_option"]=param_arg_name;
-                      parameter_names[idx++]=param_var_name;
-                  }
-                  else {
-                      param_attribute=$1;
-                      gsub(/['\'']/, "\"", $2);
+        # Replace tabs with spaces
+        line="${line//$'\t'/  }"
+        # Remove comments
+        line="${line%%#*}"
+        # Remove trailing whitespace
+        line="${line%"${line##*[![:space:]]}"}"
 
-                      if (tolower($2) ~ /^yes|true|no|false$/) {
-                          if (tolower($2) ~ /^yes|true/) {
-                              param_value=1;
-                          }
-                          else {
-                              param_value=0;
-                          }
-                      }
-                      else if ($2 ~ /^[0-9]+$/) {
-                          param_value=$2;
-                      }
-                      else {
-                          param_value="'\''"$2"'\''";
-                      }
+        if [ -z "$section" ];then
+            # Top level
+            if [[ "${line%:}" != "parameters" ]]; then
+                LOG_FATAL "Top level item must be 'parameters'"
+            else
+                section="${line%:}"
+            fi
+        else
+            if [[ "$line" =~ ^([[:blank:]]+)([^[:blank:]:]+)[[:blank:]]*:[[:blank:]]*(.*) ]]; then
+                if [ "$multiline_mode" -eq 1 ]; then
+                    attributes["$attribute_name"]="${attribute_value%%"$value_sep"}"
+                    multiline_mode=0
+                    unset value_sep attribute_name attribute_value
+                fi
+                left="${BASH_REMATCH[2]}"
+                right="${BASH_REMATCH[3]}"
+            elif [[ "$multiline_mode" -eq 1 && "$line" =~ ^([[:blank:]]+)(.*) ]]; then
+                attribute_value="$attribute_value${BASH_REMATCH[2]}$value_sep"
+            fi
 
-                      if (parameters[param_var_name,param_attribute] == "") {
-                          parameters[param_var_name,param_attribute]=param_value;
-                      }
-                      else {
-                          print "Attribute " param_attribute " for " param_arg_name " already set!"> "/dev/stderr";
-                          exit 1;
-                      }
-                  }
-              }
-          }
-     }
-     END {
-         print "declare -ga parameter_names=()";
-         for(idx in parameter_names) {
-             param_name = parameter_names[idx];
-             print "parameter_names+=(" param_name ")";
-             print "declare -gA parameters_" param_name "=()";
-         }
-         for (combined in parameters) {
-             split(combined, separate, SUBSEP);
-             param_var_name=separate[1];
-             param_attribute=separate[2];
-             print "parameters_" param_var_name "[\""param_attribute"\"]="parameters[param_var_name,param_attribute]";";
-         }
-    }' "${filename}")
-     # echo "$eval_str"
-     eval "$eval_str"
+            if [ "$multiline_mode" -eq 0 ]; then
+                if [ -z "$right" ]; then
+                    # Nothing after ':'
+                    param_arg_name="$left"
+                    param_var_name="${left//-/_}"
+                    declare -gA "parameters_${param_var_name}"
+                    declare +n attributes
+                    declare -n attributes="parameters_${param_var_name}"
+                    parameter_names+=("$param_var_name")
+                    attributes["var_name"]="$param_var_name"
+                    attributes["long_option"]="$param_arg_name"
+                elif [[ "$right" =~ ([\>\|])-? ]]; then
+                    multiline_mode=1
+                    if [[ "${BASH_REMATCH[1]}" == ">" ]]; then
+                        value_sep=' '
+                    else
+                        value_sep='\n'
+                    fi
+                    attribute_name="$left"
+                    attribute_value=''
+                else
+                    if [[ "${right,,}" =~ ^yes|true$ ]]; then
+                        right=1
+                    elif [[ "${right,,}" =~ ^no|false$ ]]; then
+                        right=0
+                    elif [[ "$right" =~ ^[[:digit:]]+$ ]]; then
+                        :
+                    elif [[ "$right" =~ ^([\'\"])(.*)([\'\"])$ ]]; then
+                        right="${BASH_REMATCH[2]}"
+                    fi
+
+                    # shellcheck disable=SC2034
+                    attributes["$left"]="$right"
+                fi
+            fi
+        fi
+    done < "$filename"
 }
 
 function parse_yaml_parameter_file() {
@@ -149,12 +141,8 @@ function parse_yaml_parameter_file() {
         fi
 
         if [ -n "${parameter_attributes[short_option]}" ]; then
-            parameter_attributes[short_option]=${parameter_attributes[short_option]//\"/}
             # shellcheck disable=SC2034
             parameter_short_to_long["${parameter_attributes[short_option]}"]="${parameter_attributes[long_option]}"
-        fi
-        if [ -n "${parameter_attributes[help]}" ]; then
-            parameter_attributes[help]=${parameter_attributes[help]//\"/}
         fi
 
         LOG_DEBUG "Attributes for $param_name: $(variable_to_string "parameters_${param_name}")"

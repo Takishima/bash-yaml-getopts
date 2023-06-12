@@ -11,7 +11,7 @@ parameters: # asdjnasd
     type: bool
   start:
     short_option: 's'
-    help: "Start value for counter"
+    help: Start value for counter
     type: int   # an int
   name:
     help: "Name"  # a comment
