@@ -45,7 +45,7 @@ function parse_args() {
     local getopts_args
 
     add_default_options
-    getopts_args="$(generate_getopts_args)"
+    getopts_args="$(generate_getopts_args)-:"
     LOG_DEBUG "getopts_args = ${getopts_args}"
 
     if command -v parse_extra_args >/dev/null 2>&1; then
@@ -64,17 +64,14 @@ function parse_args() {
         fi
         LOG_DEBUG "Processing: $OPT $OPTARG"
 
-        # Support specifying --no-XXX to negate a boolean parameter
-        flag_value=1
-        if [[ $OPT =~ ^no-([a-zA-Z0-9_-]+) ]]; then
-            OPT="${BASH_REMATCH[1]}"
-            flag_value=0
-        fi
-
         if [ "$OPT" == '?' ]; then
             # bad short option (error reported via getopts)
             exit 2
-        elif [ -n "${parameters_short_to_long[$OPT]}" ]; then
+        fi
+
+        process_option "$OPT" "$OPTARG"
+
+        if [ -n "${parameters_short_to_long[$OPT]}" ]; then
             declare -n parameters_attributes="parameters_${parameters_short_to_long[$OPT]}"
         else
             declare -n parameters_attributes="parameters_${OPT//-/_}"
@@ -90,36 +87,6 @@ function parse_args() {
                 no_arg
             fi
         fi
-
-        LOG_DEBUG "var_type=$var_type var_name=$var_name"
-
-        case "$var_type" in
-            help)           generate_help_message
-                            exit 0
-                            ;;
-            bool)           set_var "$var_name" "$flag_value"
-                            ;;
-            int | string)   set_var "$var_name" "$OPTARG"
-                            ;;
-
-            path)           [ -e "$OPTARG" ] || LOG_FATAL "-$OPT/--$OPT requires a valid path! Passed: $OPTARG"
-                            set_var "$var_name" "$OPTARG"
-                            ;;
-            delegated )     success=1
-                            if [ "$has_extra_args" -eq 1 ]; then
-                                LOG_DEBUG "calling parse_extra_args '$OPT' '$OPTARG' '$flag_value'"
-                                parse_extra_args "$OPT" "$OPTARG" "$flag_value" && success=0 || success=$?
-                            fi
-
-                            if [ "$success" -ne 0 ]; then
-                                [ "$flag_value" -eq 1 ] \
-                                    || LOG_FATAL "No option found for -$OPT/--$OPT (received --no-$OPT on cmdline)" \
-                                        && LOG_FATAL "Illegal option: -$OPT/--$OPT"
-                            fi
-                            ;;
-            * )             LOG_FATAL "Unknown variable type: $var_type"
-                            ;;
-        esac
     done
 
     for param_name in "${parameters_names[@]}"; do
