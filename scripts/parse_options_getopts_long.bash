@@ -72,7 +72,7 @@ function parse_args() {
     while getopts_long ":${getopts_args}" OPT "${long_args[@]}" "" "$@"; do
         LOG_DEBUG "Processing: $OPT $OPTLARG"
 
-        if [ "$OPT" == ':' ]; then
+        if [[ "$OPT" == ':' && "$has_extra_args" -ne 1 ]]; then
             LOG_FATAL "$OPTLERR"
         fi
 

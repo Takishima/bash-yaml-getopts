@@ -181,7 +181,11 @@ function process_option() {
     if [ -n "${parameters_short_to_long[$OPT]}" ]; then
         declare -n parameters_attributes="parameters_${parameters_short_to_long[$OPT]}"
     else
-        declare -n parameters_attributes="parameters_${OPT//-/_}"
+        tmp="${OPT//-/_}"
+        tmp="parameters_${tmp//:/_}"
+        if [ -z ${!tmp+x} ]; then
+            declare -n parameters_attributes="$tmp"
+        fi
     fi
 
     var_type="${parameters_attributes[type]:-delegated}"
