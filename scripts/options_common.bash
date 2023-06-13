@@ -187,7 +187,7 @@ function process_option() {
     var_type="${parameters_attributes[type]:-delegated}"
     var_name="${parameters_attributes[var_name]:-dummy_var}"
 
-    LOG_DEBUG "var_type=$var_type var_name=$var_name"
+    LOG_DEBUG "var_type=$var_type var_name=$var_name flag_value=$flag_value"
 
     case "$var_type" in
         help)           generate_help_message
@@ -218,6 +218,31 @@ function process_option() {
         * )             LOG_FATAL "Unknown variable type: $var_type"
                         ;;
     esac
+}
+
+# ==============================================================================
+
+function handle_default_options() {
+    declare -g parameters_names
+    for param_name in "${parameters_names[@]}"; do
+        declare -n parameters_attributes="parameters_${param_name}" var_was_set="_${param_name}_was_set"
+        if [[ "${var_was_set:-0}" == "0" && -n "${parameters_attributes[default]}" ]]; then
+            set_var "${parameters_attributes[var_name]}" "${parameters_attributes[default]}"
+        fi
+    done
+}
+
+# ------------------------------------------------------------------------------
+
+function handle_log_level_option() {
+    declare -g LOG_LEVEL
+    declare -gr _LOG_LEVELS _log_level_was_set log_level
+
+    if  [ "${_log_level_was_set:-0}" -eq 1 ]; then
+        _level="${_LOG_LEVELS[${log_level^^}]}"
+        # shellcheck disable=SC2034
+        [ -n "$_level" ] || LOG_FATAL "Value '$log_level' for argument '--log-level' is invalid" && LOG_LEVEL="$_level"
+    fi
 }
 
 # ==============================================================================

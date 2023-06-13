@@ -53,7 +53,7 @@ function parse_args() {
         getopts_args="${getopts_args_extra:-}${getopts_args}"
     fi
 
-    declare -g OPT OPTARG
+    declare -g OPT OPTARG flag_value
 
     while getopts "${getopts_args}" OPT; do
         # shellcheck disable=SC2214,SC2295
@@ -89,22 +89,6 @@ function parse_args() {
         fi
     done
 
-    for param_name in "${parameters_names[@]}"; do
-        declare -n parameters_attributes="parameters_${param_name}" var_was_set="_${param_name}_was_set"
-        if [[ "${var_was_set:-0}" == "0" && -n "${parameters_attributes[default]}" ]]; then
-            set_var "${parameters_attributes[var_name]}" "${parameters_attributes[default]}"
-        fi
-    done
-
-    # ==========================================================================
-    # Handle default options
-
-    declare -g LOG_LEVEL
-    declare -gr _LOG_LEVELS _log_level_was_set log_level
-
-    if  [ "${_log_level_was_set:-0}" -eq 1 ]; then
-        _level="${_LOG_LEVELS[${log_level^^}]}"
-        # shellcheck disable=SC2034
-        [ -n "$_level" ] || LOG_FATAL "Value '$log_level' for argument '--log-level' is invalid" && LOG_LEVEL="$_level"
-    fi
+    handle_default_options
+    handle_log_level_option
 }
