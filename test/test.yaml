@@ -1,5 +1,9 @@
 ---
 
+options:
+  aa:
+    a: 1
+
 parameters: # asdjnasd
   build:
     short_option: "B"

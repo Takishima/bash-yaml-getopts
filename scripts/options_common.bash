@@ -62,9 +62,9 @@ function set_var() {
 
 function add_default_options() {
     local default_log_level="${_FROM_LOG_LEVEL[$LOG_LEVEL]:-$LOG_LEVEL_INFO}"
-    declare -g parameter_names
+    declare -g parameters_names
 
-    parameter_names=('help' 'log_level' "${parameter_names[@]}")
+    parameters_names=('help' 'log_level' "${parameters_names[@]}")
 
     # shellcheck disable=SC2034
     declare -gA parameters_help=([short_option]=h

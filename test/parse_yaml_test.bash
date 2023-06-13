@@ -46,8 +46,8 @@ test_read_yaml_parameter_file() {
     _read_yaml_parameter_file "$TEST_DIR/test.yaml"
     ${_ASSERT_EQUALS_} "'exit code'" 0 "'$?'"
 
-    var="$(variable_to_string parameter_names)"
-    assertEquals 'Test parameter_names' 'parameter_names=([0]="build" [1]="compile_db" [2]="start" [3]="name")' "$var"
+    var="$(variable_to_string parameters_names)"
+    assertEquals 'Test parameters_names' 'parameters_names=([0]="build" [1]="compile_db" [2]="start" [3]="name")' "$var"
 
     assertNotNull "parameters_build[...]" "${parameters_build[*]}"
     assertEquals 'build[help]' 'Build directory' "${parameters_build[help]}"
@@ -102,8 +102,8 @@ test_parse_yaml_parameter_file() {
      parse_yaml_parameter_file "$TEST_DIR/test.yaml"
     ${_ASSERT_EQUALS_} "'exit code'" 0 "'$?'"
 
-    var="$(variable_to_string parameter_names)"
-    assertEquals 'Test parameter_names' 'parameter_names=([0]="build" [1]="compile_db" [2]="start" [3]="name")' "$var"
+    var="$(variable_to_string parameters_names)"
+    assertEquals 'Test parameters_names' 'parameters_names=([0]="build" [1]="compile_db" [2]="start" [3]="name")' "$var"
 
     var="$(variable_to_string parameter_short_to_long)"
     assertEquals 'short_to_long' 'parameter_short_to_long=([B]="build" [s]="start" )' "$var"

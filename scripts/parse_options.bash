@@ -43,11 +43,11 @@ function needs_arg() {
 function generate_getopts_args() {
     local getopts_args=''
     # shellcheck disable=SC2154
-    for param_name in "${parameter_names[@]}"; do
-        declare -n parameter_attributes="parameters_${param_name}"
-        if [ -n "${parameter_attributes[short_option]}" ]; then
-            getopts_args="${getopts_args}${parameter_attributes[short_option]}"
-            if [[ "${parameter_attributes[type]}" != 'help'  && "${parameter_attributes[type]}" != 'bool' ]]; then
+    for param_name in "${parameters_names[@]}"; do
+        declare -n parameters_attributes="parameters_${param_name}"
+        if [ -n "${parameters_attributes[short_option]}" ]; then
+            getopts_args="${getopts_args}${parameters_attributes[short_option]}"
+            if [[ "${parameters_attributes[type]}" != 'help'  && "${parameters_attributes[type]}" != 'bool' ]]; then
                 getopts_args="${getopts_args}:"
             fi
         fi
@@ -68,25 +68,25 @@ function generate_help_message() {
     echo -e '\nOptions:'
 
     local help_lines_optnames=() help_lines_description=() optnames_column_width=15
-    for param_name in "${parameter_names[@]}"; do
+    for param_name in "${parameters_names[@]}"; do
         # shellcheck disable=SC2178
-        declare -n parameter_attributes="parameters_${param_name//-/_}"
-        if [ -n "${parameter_attributes[short_option]}" ]; then
-            help_lines_optnames+=("-${parameter_attributes[short_option]},--${parameter_attributes[long_option]}")
+        declare -n parameters_attributes="parameters_${param_name//-/_}"
+        if [ -n "${parameters_attributes[short_option]}" ]; then
+            help_lines_optnames+=("-${parameters_attributes[short_option]},--${parameters_attributes[long_option]}")
         else
-            help_lines_optnames+=("--${parameter_attributes[long_option]}")
+            help_lines_optnames+=("--${parameters_attributes[long_option]}")
         fi
         if [ "$optnames_column_width" -lt "${#help_lines_optnames[-1]}" ]; then
             optnames_column_width="${#help_lines_optnames[-1]}"
         fi
 
-        [ -n "${parameter_attributes[help]}" ] || LOG_FATAL "Missing description string for $param_name"
-        readarray -t description_lines  <<<"${parameter_attributes[help]}"
+        [ -n "${parameters_attributes[help]}" ] || LOG_FATAL "Missing description string for $param_name"
+        readarray -t description_lines  <<<"${parameters_attributes[help]}"
 
         help_lines_description+=("${description_lines[0]}")
-        if [[ -n "${parameter_attributes[default]}" && "${parameter_attributes[type]}" != 'bool' ]]; then
+        if [[ -n "${parameters_attributes[default]}" && "${parameters_attributes[type]}" != 'bool' ]]; then
             help_lines_optnames+=('')
-            help_lines_description+=("Default value: ${parameter_attributes[default]}")
+            help_lines_description+=("Default value: ${parameters_attributes[default]}")
         fi
 
         for (( i=1; i<${#description_lines[*]}; i++ )); do
@@ -138,14 +138,14 @@ function parse_args() {
         if [ "$OPT" == '?' ]; then
             # bad short option (error reported via getopts)
             exit 2
-        elif [ -n "${parameter_short_to_long[$OPT]}" ]; then
-            declare -n parameter_attributes="parameters_${parameter_short_to_long[$OPT]}"
+        elif [ -n "${parameters_short_to_long[$OPT]}" ]; then
+            declare -n parameters_attributes="parameters_${parameters_short_to_long[$OPT]}"
         else
-            declare -n parameter_attributes="parameters_${OPT//-/_}"
+            declare -n parameters_attributes="parameters_${OPT//-/_}"
         fi
 
-        var_type="${parameter_attributes[type]:-delegated}"
-        var_name="${parameter_attributes[var_name]:-dummy_var}"
+        var_type="${parameters_attributes[type]:-delegated}"
+        var_name="${parameters_attributes[var_name]:-dummy_var}"
 
         if [ "$var_type" != "delegated" ]; then
             if [[ "$var_type" != 'bool' && "$var_type" != 'help' ]]; then
@@ -186,10 +186,10 @@ function parse_args() {
         esac
     done
 
-    for param_name in "${parameter_names[@]}"; do
-        declare -n parameter_attributes="parameters_${param_name}" var_was_set="_${param_name}_was_set"
-        if [[ "${var_was_set:-0}" == "0" && -n "${parameter_attributes[default]}" ]]; then
-            set_var "${parameter_attributes[var_name]}" "${parameter_attributes[default]}"
+    for param_name in "${parameters_names[@]}"; do
+        declare -n parameters_attributes="parameters_${param_name}" var_was_set="_${param_name}_was_set"
+        if [[ "${var_was_set:-0}" == "0" && -n "${parameters_attributes[default]}" ]]; then
+            set_var "${parameters_attributes[var_name]}" "${parameters_attributes[default]}"
         fi
     done
 
