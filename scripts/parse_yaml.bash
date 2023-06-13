@@ -41,7 +41,7 @@ BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # other functions)
 # For each parameter, this function will add the name to an array named `parameters_names` and the parameter attributes
 # will be stored in an associative array named `parameters_<param_name>` (e.g. `parameters_build`)
-function _read_yaml_parameters_file() {
+function _read_yaml_parameter_file() {
     declare -r filename="$1"
     declare -a indents=()
     local section='' multiline_mode=0
@@ -155,10 +155,9 @@ function _read_yaml_parameters_file() {
 
 function parse_yaml_parameter_file() {
     declare -ga parameters_names
-    declare -gr GREP
     declare -r filename="$1"
     LOG_INFO "Reading YAML file: $filename"
-    _read_yaml_parameters_file "$filename"
+    _read_yaml_parameter_file "$filename"
 
     [ -z "${sections[parameters]}" ] && LOG_FATAL "Missing 'parameters' section in YAML file"
 

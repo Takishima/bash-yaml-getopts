@@ -63,11 +63,7 @@ test_locate_cmd() {
 
 test_verify_system() {
     declare -g PARAM_YAML_CONFIG="$BASEPATH/test.yaml"
-    ${_ASSERT_NULL_} "'AWK null'" "'$AWK'"
-    ${_ASSERT_NULL_} "'GREP null'" "'$GREP'"
     verify_system
-    ${_ASSERT_NOT_NULL_} "'AWK not null'" "'$AWK'"
-    ${_ASSERT_NOT_NULL_} "'GREP not null'" "'$GREP'"
 
     PARAM_YAML_CONFIG=''
     stderr="$(verify_system 2>&1)"
@@ -89,9 +85,6 @@ test_verify_system() {
 # ==============================================================================
 
 test_variable_to_string() {
-    locate_cmd GREP ggrep grep
-    ${_ASSERT_NOT_NULL_} "'GREP not null'" "'$GREP'"
-
     # shellcheck disable=SC2034
     declare -a a=(1 2 3 4)
     # shellcheck disable=SC2034

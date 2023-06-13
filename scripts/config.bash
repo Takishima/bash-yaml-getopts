@@ -125,8 +125,6 @@ locate_cmd() {
 # ==============================================================================
 
 verify_system() {
-    locate_cmd AWK gawk awk
-    locate_cmd GREP ggrep grep
     declare -g PARAM_YAML_CONFIG
 
     [ "${BASH_VERSINFO[0]}" -ge 4 ] || echo "Associative arrays require Bash>=4.x (you have: $BASH_VERSION)"
@@ -137,11 +135,9 @@ verify_system() {
 # ==============================================================================
 
 variable_to_string() {
-    declare -gr GREP
-    [ -n "$GREP" ] || LOG_FATAL_INTERNAL "'GREP' variable not defined!"
-
     set -o posix
-    set | "$GREP" "^${1}="
+    set_output=$(set)
+    re=$'\n'"(${1}=[^"$'\n'"]+)" && [[ "$set_output" =~ $re ]] && echo "${BASH_REMATCH[1]}"
 }
 
 # ==============================================================================

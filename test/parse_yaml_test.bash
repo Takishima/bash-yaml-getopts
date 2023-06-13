@@ -42,7 +42,6 @@ set +o errexit
 # ==============================================================================
 
 test_read_yaml_parameter_file() {
-    locate_cmd GREP ggrep grep
     _read_yaml_parameter_file "$TEST_DIR/test.yaml"
     ${_ASSERT_EQUALS_} "'exit code'" 0 "'$?'"
 
@@ -76,8 +75,6 @@ test_read_yaml_parameter_file() {
 
 
 test_read_yaml_parameter_file_multiline() {
-    locate_cmd GREP ggrep grep
-
     _read_yaml_parameter_file "$TEST_DIR/multiline_string.yaml"
     ${_ASSERT_EQUALS_} "'exit code'" 0 "'$?'"
 
@@ -97,16 +94,14 @@ test_read_yaml_parameter_file_multiline() {
 # ==============================================================================
 
 test_parse_yaml_parameter_file() {
-    locate_cmd GREP ggrep grep
-
      parse_yaml_parameter_file "$TEST_DIR/test.yaml"
     ${_ASSERT_EQUALS_} "'exit code'" 0 "'$?'"
 
     var="$(variable_to_string parameters_names)"
     assertEquals 'Test parameters_names' 'parameters_names=([0]="build" [1]="compile_db" [2]="start" [3]="name")' "$var"
 
-    var="$(variable_to_string parameter_short_to_long)"
-    assertEquals 'short_to_long' 'parameter_short_to_long=([B]="build" [s]="start" )' "$var"
+    var="$(variable_to_string parameters_short_to_long)"
+    assertEquals 'short_to_long' 'parameters_short_to_long=([B]="build" [s]="start" )' "$var"
 
     assertEquals 'build[help]' 'Build directory' "${parameters_build[help]}"
     assertEquals 'build[short_option]' 'B' "${parameters_build[short_option]}"
@@ -119,8 +114,6 @@ test_parse_yaml_parameter_file() {
 }
 
 test_parse_yaml_parameter_file_invalid() {
-    locate_cmd GREP ggrep grep
-
     stderr=$(parse_yaml_parameter_file "$TEST_DIR/invalid_type.yaml" 2>&1)
     ${_ASSERT_NOT_EQUALS_} "'exit code'" 0 "$?"
     assertContains "$stderr" "Missing 'type' attribute for"
