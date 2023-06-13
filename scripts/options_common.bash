@@ -92,3 +92,72 @@ EOF
 
 
 # ==============================================================================
+
+function generate_getopts_args() {
+    local getopts_args=''
+    # shellcheck disable=SC2154
+    for param_name in "${parameters_names[@]}"; do
+        declare -n parameters_attributes="parameters_${param_name}"
+        if [ -n "${parameters_attributes[short_option]}" ]; then
+            getopts_args="${getopts_args}${parameters_attributes[short_option]}"
+            if [[ "${parameters_attributes[type]}" != 'help'  && "${parameters_attributes[type]}" != 'bool' ]]; then
+                getopts_args="${getopts_args}:"
+            fi
+        fi
+    done > /dev/null 2> /dev/null
+    echo "${getopts_args}-:"
+}
+
+
+# ==============================================================================
+
+function generate_help_message() {
+    local PROGRAM=${PROGRAM:-$0}
+    declare -a description_lines
+
+    if command -v help_header > /dev/null 2>&1; then
+        help_header
+    fi
+
+    echo -e '\nUsage:'
+    echo "  $PROGRAM [options]"
+    echo -e '\nOptions:'
+
+    local help_lines_optnames=() help_lines_description=() optnames_column_width=15
+    for param_name in "${parameters_names[@]}"; do
+        # shellcheck disable=SC2178
+        declare -n parameters_attributes="parameters_${param_name//-/_}"
+        if [ -n "${parameters_attributes[short_option]}" ]; then
+            help_lines_optnames+=("-${parameters_attributes[short_option]},--${parameters_attributes[long_option]}")
+        else
+            help_lines_optnames+=("--${parameters_attributes[long_option]}")
+        fi
+        if [ "$optnames_column_width" -lt "${#help_lines_optnames[-1]}" ]; then
+            optnames_column_width="${#help_lines_optnames[-1]}"
+        fi
+
+        [ -n "${parameters_attributes[help]}" ] || LOG_FATAL "Missing description string for $param_name"
+        readarray -t description_lines  <<<"${parameters_attributes[help]}"
+
+        help_lines_description+=("${description_lines[0]}")
+        if [[ -n "${parameters_attributes[default]}" && "${parameters_attributes[type]}" != 'bool' ]]; then
+            help_lines_optnames+=('')
+            help_lines_description+=("Default value: ${parameters_attributes[default]}")
+        fi
+
+        for (( i=1; i<${#description_lines[*]}; i++ )); do
+            help_lines_optnames+=('')
+            help_lines_description+=("${description_lines[$i]}")
+        done
+    done
+
+    for (( i=0; i<${#help_lines_optnames[*]}; i++ )); do
+        printf "  %-${optnames_column_width}s  %s\n" "${help_lines_optnames[$i]}" "${help_lines_description[$i]}"
+    done
+
+    if command -v help_footer >/dev/null 2>&1; then
+        help_footer
+    fi
+}
+
+# ==============================================================================

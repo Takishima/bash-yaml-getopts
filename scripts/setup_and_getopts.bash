@@ -29,7 +29,7 @@ BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}" )" &> /dev/null && pwd 
 # ==============================================================================
 
 . "$BASEPATH/parse_yaml.bash"
-. "$BASEPATH/parse_options.bash"
+. "$BASEPATH/parse_options_getopts.bash"
 
 # ------------------------------------------------------------------------------
 
