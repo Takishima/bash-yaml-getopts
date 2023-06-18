@@ -17,13 +17,16 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# Fail on error
-set -o errexit
 
 # ==============================================================================
 
 [ "${_sourced_config}" != "" ] && return || _sourced_config=.
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "$0 should not be executed, only sourced" >&2 && exit 1
+
+# ------------------------------------------------------------------------------
+
+# Fail on error
+set -o errexit
 
 # ==============================================================================
 
