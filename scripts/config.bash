@@ -64,6 +64,7 @@ declare -A _LOG_LEVEL_PREFIXES=([FATAL]="${_RED}"
                                 [DEBUG]="${_BLUE}")
 
 # Default log level
+: "${LOG_LEVEL:=${LOGLEVEL:-}}"
 : "${LOG_LEVEL:=${_LOG_LEVELS[INFO]}}}"
 
 # Compatibility for setting LOG_LEVEL to a string (e.g. LOG_LEVEL=debug)
