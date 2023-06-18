@@ -231,7 +231,10 @@ function handle_default_options() {
     for __param_name in "${parameters_names[@]}"; do
         declare -n __param_attributes="parameters_${__param_name}" var_was_set="_${__param_name}_was_set"
         if [[ "${var_was_set:-0}" == "0" && -n "${__param_attributes[default]}" ]]; then
-            set_var "${__param_attributes[var_name]}" "${__param_attributes[default]}"
+            __default_value="${__param_attributes[default]}"
+            [[ "${__param_attributes[type]}" == 'path' && ! -e "$__default_value" ]] \
+                && LOG_FATAL "Default path not valid for ${__param_attributes[name]}: $__default_value"
+            set_var "${__param_attributes[var_name]}" "$__default_value"
         fi
     done
 }
