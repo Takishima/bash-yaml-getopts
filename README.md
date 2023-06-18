@@ -72,6 +72,8 @@ compile_db=0
 
 TODO.
 
+Parameter names are not allowed to start with two underscores since those would result in Bash variables with the same names and these names are reserved for internal use.
+
 # Limitations
 
 YAML parsing script is only able to read well-formatted YAML files. In addition, it can only read YAML files that have a particular structure:

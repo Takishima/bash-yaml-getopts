@@ -29,20 +29,20 @@ BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}" )" &> /dev/null && pwd 
 # ==============================================================================
 
 function generate_long_args() {
-    declare -ga long_args=()
+    declare -ga __long_args=()
 
-    for param_name in "${parameters_names[@]}"; do
-        declare -n parameters_attributes="parameters_${param_name}"
-        long_args+=("${parameters_attributes[long_option]}")
-        if [[ "${parameters_attributes[type]}" == bool || "${parameters_attributes[type]}" == help ]]; then
-            long_args+=(no_argument)
+    for __param_name in "${parameters_names[@]}"; do
+        declare -n __param_attributes="parameters_${__param_name}"
+        __long_args+=("${__param_attributes[long_option]}")
+        if [[ "${__param_attributes[type]}" == bool || "${__param_attributes[type]}" == help ]]; then
+            __long_args+=(no_argument)
 
-            if [[ "${parameters_attributes[type]}" == bool ]]; then
-                long_args+=("no-${parameters_attributes[long_option]}")
-                long_args+=(no_argument)
+            if [[ "${__param_attributes[type]}" == bool ]]; then
+                __long_args+=("no-${__param_attributes[long_option]}")
+                __long_args+=(no_argument)
             fi
         else
-            long_args+=(required_argument)
+            __long_args+=(required_argument)
         fi
     done
 }
@@ -50,29 +50,29 @@ function generate_long_args() {
 # ==============================================================================
 
 function parse_args() {
-    declare -i has_extra_args=0
-    local getopts_args
+    local __getopts_args
+    declare -i __has_extra_args=0
 
     add_default_options
-    getopts_args="$(generate_getopts_args)"
-    LOG_DEBUG "getopts_args = ${getopts_args}"
+    __getopts_args="$(generate_getopts_args)"
+    LOG_DEBUG "getopts_args = ${__getopts_args}"
 
     if command -v parse_extra_args >/dev/null 2>&1; then
-        has_extra_args=1
-        getopts_args="${getopts_args_extra:-}${getopts_args}"
+        __has_extra_args=1
+        __getopts_args="${getopts_args_extra:-}${__getopts_args}"
     fi
 
     declare -g OPT OPTLARG
-    declare -ga long_args
+    declare -ga __long_args
 
     generate_long_args || LOG_FATAL "Failed to generate list of long arguments"
-    LOG_DEBUG "long_args = $(variable_to_string long_args)"
+    LOG_DEBUG "__long_args = $(variable_to_string __long_args)"
 
     OPTLIND=1
-    while getopts_long ":${getopts_args}" OPT "${long_args[@]}" "" "$@"; do
+    while getopts_long ":${__getopts_args}" OPT "${__long_args[@]}" "" "$@"; do
         LOG_DEBUG "Processing: $OPT $OPTLARG"
 
-        if [[ "$OPT" == ':' && "$has_extra_args" -ne 1 ]]; then
+        if [[ "$OPT" == ':' && "$__has_extra_args" -ne 1 ]]; then
             LOG_FATAL "$OPTLERR"
         fi
 

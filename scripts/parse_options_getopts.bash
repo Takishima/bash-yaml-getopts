@@ -33,29 +33,27 @@ function no_arg() {
 }
 
 function needs_arg() {
-    declare -g OPT OPTARG flag_value
+    declare -g OPT OPTARG __flag_value
     [ -n "$OPTARG" ] || LOG_FATAL "Missing arg for -$OPT/--$OPT option"
-    [ "$flag_value" -ne 0 ] || LOG_FATAL "Cannot specify --no-$OPT for non-flag argument --$OPT"
+    [ "$__flag_value" -ne 0 ] || LOG_FATAL "Cannot specify --no-$OPT for non-flag argument --$OPT"
 }
 
 # ==============================================================================
 
 function parse_args() {
-    declare -i has_extra_args=0
-    local getopts_args
+    local __getopts_args
 
     add_default_options
-    getopts_args="$(generate_getopts_args)-:"
-    LOG_DEBUG "getopts_args = ${getopts_args}"
+    __getopts_args="$(generate_getopts_args)-:"
+    LOG_DEBUG "getopts_args = ${__getopts_args}"
 
     if command -v parse_extra_args >/dev/null 2>&1; then
-        has_extra_args=1
-        getopts_args="${getopts_args_extra:-}${getopts_args}"
+        __getopts_args="${getopts_args_extra:-}${__getopts_args}"
     fi
 
-    declare -g OPT OPTARG flag_value
+    declare -g OPT OPTARG __flag_value
 
-    while getopts "${getopts_args}" OPT; do
+    while getopts "${__getopts_args}" OPT; do
         # shellcheck disable=SC2214,SC2295
         if [ "$OPT" = "-" ]; then     # long option: reformulate OPT and OPTARG
             OPT="${OPTARG%%=*}"       # extract long option name
@@ -72,13 +70,13 @@ function parse_args() {
         process_option "$OPT" "$OPTARG"
 
         if [ -n "${parameters_short_to_long[$OPT]}" ]; then
-            declare -n parameters_attributes="parameters_${parameters_short_to_long[$OPT]}"
+            declare -n __param_attributes="parameters_${parameters_short_to_long[$OPT]}"
         else
-            declare -n parameters_attributes="parameters_${OPT//-/_}"
+            declare -n __param_attributes="parameters_${OPT//-/_}"
         fi
 
-        var_type="${parameters_attributes[type]:-delegated}"
-        var_name="${parameters_attributes[var_name]:-dummy_var}"
+        var_type="${__param_attributes[type]:-delegated}"
+        var_name="${__param_attributes[var_name]:-dummy_var}"
 
         if [ "$var_type" != "delegated" ]; then
             if [[ "$var_type" != 'bool' && "$var_type" != 'help' ]]; then
