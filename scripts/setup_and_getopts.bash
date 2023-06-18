@@ -33,6 +33,7 @@ BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}" )" &> /dev/null && pwd 
 
 # ------------------------------------------------------------------------------
 
+[ -z "${PARAM_YAML_CONFIG+x}" ] && LOG_FATAL "PARAM_YAML_CONFIG variable not set!"
 PARAM_YAML_CONFIG="$(realpath "$PARAM_YAML_CONFIG")"
 
 verify_system
