@@ -25,4 +25,6 @@ jobs:
         run: sudo apt-get update && sudo apt-get install shunit2
 
       - name: Run tests
+        env:
+          LOG_LEVEL: DEBUG
         run: ./tools/run_tests.bash
