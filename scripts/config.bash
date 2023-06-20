@@ -30,7 +30,7 @@ set -o errexit
 
 # ==============================================================================
 
-ncolors=$(tput colors 2> /dev/null)
+ncolors=$(tput colors 2> /dev/null || true)
 if [[ -n "$ncolors" && "$ncolors" -ge 16 ]]; then
     _BOLD="$(tput bold)"
     _UNDERLINE="$(tput smul)"
