@@ -66,6 +66,9 @@ declare -A _LOG_LEVEL_PREFIXES=([FATAL]="${_RED}"
                                 [INFO]="${_WHITE}"
                                 [DEBUG]="${_BLUE}")
 
+# Reference time
+: "${__start_time:=${EPOCHREALTIME}}"
+
 # Default log level
 : "${LOG_LEVEL:=${LOGLEVEL:-}}"
 : "${LOG_LEVEL:=${_LOG_LEVELS[INFO]}}}"
@@ -82,13 +85,14 @@ fi
 _log_print_message() {
     local level_name=${1^^} level="${_LOG_LEVELS[${1^^}]:-${_LOG_LEVELS[FATAL]}}"
     shift
-    local log_message="${*:-}"
+    local log_message="${*:-}" elapsed_time
 
     if [ "$LOG_LEVEL" -eq "${_LOG_LEVELS[SILENT]:-0}" ] || [ "$level" -gt "$LOG_LEVEL" ]; then
         return 0
     fi
 
-    printf '%b[%-5s] %b%b\n' "${_LOG_LEVEL_PREFIXES[$level_name]}" "$level_name" "$log_message" "${_NORMAL}"
+    elapsed_time="$(echo "$EPOCHREALTIME - $__start_time" | bc -l)"
+    printf '%b[%-5s][%2.3f] %b%b\n' "${_LOG_LEVEL_PREFIXES[$level_name]}" "$level_name" "$elapsed_time" "$log_message" "${_NORMAL}"
 }
 
 LOG_FATAL() { _log_print_message FATAL "$1" >&2; exit 1; }
