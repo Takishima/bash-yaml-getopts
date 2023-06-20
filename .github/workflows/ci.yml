@@ -1,0 +1,28 @@
+---
+
+name: CI
+
+on:
+  pull_request:
+    types: [assigned, opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+
+jobs:
+  standard:
+    runs-on: ubuntu-latest
+
+    name: "Linux"
+    if: >-
+      (github.event_name != 'pull_request'
+        || (github.event_name == 'pull_request' && github.event.pull_request.merged != true))
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Shunit2
+        run: sudo apt-get update && sudo apt-get install shunit2
+
+      - name: Run tests
+        run: ./tools/run_tests.bash

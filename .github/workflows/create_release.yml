@@ -1,0 +1,31 @@
+---
+
+name: Publish new release
+
+on:
+  push:
+    tags:
+      - v[0-9]+.*
+
+jobs:
+  standard:
+    runs-on: ubuntu-latest
+
+    name: "Linux"
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Inline scripts for release
+        run: |
+          mkdir -p dist
+          ./tools/inline_script.bash --in-file scripts/setup_and_getopts_long.bash \
+              --out-file dist/setup_and_getopts_long.inlined.bash
+          ./tools/inline_script.bash --in-file scripts/setup_and_getopts.bash \
+              --out-file dist/setup_and_getopts.inlined.bash
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/*
+          token: ${{ secrets.GITHUB_TOKEN }}
