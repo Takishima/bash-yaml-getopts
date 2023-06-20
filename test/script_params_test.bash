@@ -41,6 +41,15 @@ set +o errexit
 
 # ==============================================================================
 
+for setup_script in "$SCRIPT_DIR"/setup*; do
+    rm -f "$setup_script.inlined.bash"
+    "$BASEPATH/../tools/inline_script.bash" \
+        --in-file "$setup_script" \
+        --out-file "$setup_script.inlined.bash"
+done
+
+# ==============================================================================
+
 run() {
     setup_script="$1"
     shift
